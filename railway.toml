@@ -1,0 +1,10 @@
+[build]
+builder = "nixpacks"
+
+[build.env]
+PIP_EXTRA_INDEX_URL = "https://download.pytorch.org/whl/cpu"
+
+[deploy]
+startCommand = "gunicorn api.app:app --bind 0.0.0.0:$PORT --timeout 120"
+healthcheckPath = "/api/health"
+restartPolicyType = "on_failure"
