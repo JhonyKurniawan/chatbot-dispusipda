@@ -1,0 +1,32 @@
+# Environment variables (JANGAN UPLOAD KE GITHUB!)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database dumps
+*.sql.bak
+
+# Embeddings cache
+embeddings_cache/

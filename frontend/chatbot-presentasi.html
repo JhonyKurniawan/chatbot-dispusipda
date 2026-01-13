@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Dispusipda - Presentasi Seminar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .presentation-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .presentation-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .presentation-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .presentation-header .subtitle {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .chatbot-container {
+            width: 100%;
+            max-width: 500px;
+            height: 650px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header */
+        .chatbot-header {
+            background: linear-gradient(135deg, #1e88e5, #1565c0);
+            color: white;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-avatar {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-avatar svg {
+            width: 30px;
+            height: 30px;
+            fill: white;
+        }
+
+        .header-info h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Messages */
+        .chatbot-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: #f8fafc;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 14px 18px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.bot {
+            background: white;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #1e88e5, #1565c0);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 6px;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background: white;
+            padding: 16px 20px;
+            border-radius: 18px;
+            border-bottom-left-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .typing-indicator.show {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        /* Suggestions */
+        .suggestions {
+            padding: 12px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .suggestion-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #1e88e5;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .suggestion-btn:hover {
+            background: #1e88e5;
+            color: white;
+            border-color: #1e88e5;
+        }
+
+        /* Input */
+        .chatbot-input {
+            padding: 16px 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 12px;
+        }
+
+        .chatbot-input input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chatbot-input input:focus {
+            border-color: #1e88e5;
+        }
+
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #1e88e5, #1565c0);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(30, 136, 229, 0.4);
+        }
+
+        .send-btn svg {
+            width: 22px;
+            height: 22px;
+            fill: white;
+        }
+
+        /* Feedback Buttons */
+        .feedback-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .feedback-text {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .feedback-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 0;
+        }
+
+        .feedback-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .feedback-btn.helpful:hover {
+            background: #dcfce7;
+            border-color: #22c55e;
+        }
+
+        .feedback-btn.not-helpful:hover {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+
+        .feedback-btn.selected {
+            pointer-events: none;
+        }
+
+        .feedback-btn.helpful.selected {
+            background: #22c55e;
+            border-color: #22c55e;
+        }
+
+        .feedback-btn.helpful.selected svg {
+            fill: white;
+        }
+
+        .feedback-btn.not-helpful.selected {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+
+        .feedback-btn.not-helpful.selected svg {
+            fill: white;
+        }
+
+        .feedback-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: #64748b;
+        }
+
+        .feedback-thanks {
+            font-size: 0.75rem;
+            color: #22c55e;
+            display: none;
+        }
+
+        .feedback-thanks.show {
+            display: inline;
+        }
+
+        /* Footer info */
+        .presentation-footer {
+            margin-top: 30px;
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .tech-stack {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tech-item {
+            background: rgba(255,255,255,0.15);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbot-container">
+        <!-- Header -->
+        <div class="chatbot-header">
+            <div class="header-avatar">
+                <img src="logo/logo-dispusip.png" alt="Dispusipda" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                </svg>
+            </div>
+            <div class="header-info">
+                <h2>Asisten Virtual Dispusipda</h2>
+                <div class="header-status">
+                    <span class="status-dot"></span>
+                    <span>Online</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="chatbot-messages" id="messages">
+            <!-- Messages will be added here -->
+        </div>
+
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" id="typing">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <!-- Suggestions -->
+        <div class="suggestions" id="suggestions">
+            <button class="suggestion-btn">Cara mendaftar anggota?</button>
+            <button class="suggestion-btn">Jam buka perpustakaan?</button>
+            <button class="suggestion-btn">Layanan yang tersedia?</button>
+            <button class="suggestion-btn">Syarat peminjaman buku?</button>
+        </div>
+
+        <!-- Input -->
+        <div class="chatbot-input">
+            <input type="text" id="input" placeholder="Ketik pertanyaan Anda..." autocomplete="off">
+            <button class="send-btn" id="send-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CONFIGURATION ====================
+        const CONFIG = {
+            apiUrl: 'http://localhost:5000',
+            // Pesan greeting - ubah di sini untuk mengubah pesan awal
+            greetingMessage: 'Halo! 👋 Saya asisten virtual Dispusipda Pekanbaru. Ada yang bisa saya bantu tentang layanan perpustakaan?'
+        };
+
+        // ==================== STATE ====================
+        const state = {
+            sessionId: null,
+            isTyping: false
+        };
+
+        // ==================== DOM ELEMENTS ====================
+        const elements = {
+            messages: document.getElementById('messages'),
+            input: document.getElementById('input'),
+            sendBtn: document.getElementById('send-btn'),
+            typing: document.getElementById('typing'),
+            suggestions: document.getElementById('suggestions')
+        };
+
+        // ==================== FUNCTIONS ====================
+        
+        function generateSessionId() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function initSession() {
+            let sessionId = localStorage.getItem('chatbot_presentasi_session');
+            if (!sessionId) {
+                sessionId = generateSessionId();
+                localStorage.setItem('chatbot_presentasi_session', sessionId);
+            }
+            state.sessionId = sessionId;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function addMessage(text, isUser = false, faqId = null) {
+            const div = document.createElement('div');
+            div.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            // Feedback HTML (only for bot messages with faqId)
+            const feedbackHtml = (!isUser && faqId) ? `
+                <div class="feedback-container" data-faq-id="${faqId}">
+                    <span class="feedback-text">Membantu?</span>
+                    <button class="feedback-btn helpful" title="Ya, membantu">
+                        <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+                    </button>
+                    <button class="feedback-btn not-helpful" title="Tidak membantu">
+                        <svg viewBox="0 0 24 24"><path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/></svg>
+                    </button>
+                    <span class="feedback-thanks">Terima kasih!</span>
+                </div>
+            ` : '';
+            
+            div.innerHTML = escapeHtml(text).replace(/\n/g, '<br>') + feedbackHtml;
+            
+            // Add feedback event listeners
+            if (!isUser && faqId) {
+                const feedbackContainer = div.querySelector('.feedback-container');
+                const helpfulBtn = feedbackContainer.querySelector('.feedback-btn.helpful');
+                const notHelpfulBtn = feedbackContainer.querySelector('.feedback-btn.not-helpful');
+                
+                helpfulBtn.addEventListener('click', () => submitFeedback(faqId, true, feedbackContainer));
+                notHelpfulBtn.addEventListener('click', () => submitFeedback(faqId, false, feedbackContainer));
+            }
+            
+            elements.messages.appendChild(div);
+            elements.messages.scrollTop = elements.messages.scrollHeight;
+        }
+
+        // Submit feedback to API
+        async function submitFeedback(faqId, isHelpful, feedbackContainer) {
+            try {
+                await fetch(`${CONFIG.apiUrl}/api/feedback`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        faq_id: faqId,
+                        is_helpful: isHelpful,
+                        session_id: state.sessionId
+                    })
+                });
+                
+                // Update UI
+                const buttons = feedbackContainer.querySelectorAll('.feedback-btn');
+                const thanks = feedbackContainer.querySelector('.feedback-thanks');
+                const feedbackText = feedbackContainer.querySelector('.feedback-text');
+                
+                buttons.forEach(btn => {
+                    if ((isHelpful && btn.classList.contains('helpful')) || 
+                        (!isHelpful && btn.classList.contains('not-helpful'))) {
+                        btn.classList.add('selected');
+                    } else {
+                        btn.style.display = 'none';
+                    }
+                });
+                
+                feedbackText.style.display = 'none';
+                thanks.classList.add('show');
+            } catch (error) {
+                console.error('Error submitting feedback:', error);
+            }
+        }
+
+        function showTyping() {
+            state.isTyping = true;
+            elements.typing.classList.add('show');
+            elements.messages.scrollTop = elements.messages.scrollHeight;
+        }
+
+        function hideTyping() {
+            state.isTyping = false;
+            elements.typing.classList.remove('show');
+        }
+
+        async function sendMessage(message) {
+            if (!message.trim() || state.isTyping) return;
+
+            addMessage(message, true);
+            elements.input.value = '';
+            elements.suggestions.style.display = 'none';
+            showTyping();
+
+            try {
+                const response = await fetch(`${CONFIG.apiUrl}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        session_id: state.sessionId
+                    })
+                });
+
+                const data = await response.json();
+                hideTyping();
+
+                if (data.error) {
+                    addMessage('Maaf, terjadi kesalahan. Silakan coba lagi.', false, null);
+                } else {
+                    if (data.session_id) {
+                        state.sessionId = data.session_id;
+                        localStorage.setItem('chatbot_presentasi_session', data.session_id);
+                    }
+                    
+                    // Get FAQ ID for feedback
+                    const faqId = data.matched_faqs && data.matched_faqs.length > 0 
+                        ? data.matched_faqs[0].id 
+                        : null;
+                    
+                    addMessage(data.response, false, faqId);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                hideTyping();
+                addMessage('Maaf, tidak dapat terhubung ke server. Silakan coba lagi.', false, null);
+            }
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        
+        elements.sendBtn.addEventListener('click', () => {
+            sendMessage(elements.input.value);
+        });
+
+        elements.input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage(elements.input.value);
+            }
+        });
+
+        document.querySelectorAll('.suggestion-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                sendMessage(btn.textContent);
+            });
+        });
+
+        // ==================== INITIALIZE ====================
+        
+        initSession();
+        // Tampilkan pesan greeting saat load (no feedback for greeting)
+        addMessage(CONFIG.greetingMessage, false, null);
+        elements.input.focus();
+    </script>
+</body>
+</html>

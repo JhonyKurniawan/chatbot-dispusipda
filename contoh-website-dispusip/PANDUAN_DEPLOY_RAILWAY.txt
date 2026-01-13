@@ -1,0 +1,204 @@
+================================================================================
+PANDUAN DEPLOY CHATBOT KE RAILWAY.APP
+================================================================================
+
+================================================================================
+LANGKAH 1: DAFTAR AKUN RAILWAY
+================================================================================
+1. Buka https://railway.app
+2. Klik "Login" atau "Start New Project"
+3. Login dengan GitHub (recommended) atau email
+4. Verifikasi akun
+
+================================================================================
+LANGKAH 2: BUAT PROJECT BARU DI RAILWAY
+================================================================================
+1. Klik "New Project"
+2. Pilih "Deploy from GitHub repo"
+3. Connect GitHub account (jika belum)
+4. Pilih repository chatbot-dispusipda
+   (Jika belum ada di GitHub, upload dulu - lihat LANGKAH 2B)
+
+================================================================================
+LANGKAH 2B: UPLOAD KE GITHUB (Jika belum)
+================================================================================
+Buka terminal di folder chatbot-dispusipda, jalankan:
+
+git init
+git add .
+git commit -m "Initial commit - Chatbot Dispusipda"
+git branch -M main
+git remote add origin https://github.com/USERNAME/chatbot-dispusipda.git
+git push -u origin main
+
+Ganti USERNAME dengan username GitHub Anda.
+
+================================================================================
+LANGKAH 3: SETUP DATABASE MYSQL DI RAILWAY
+================================================================================
+1. Di dashboard Railway, klik "New" → "Database" → "MySQL"
+2. Railway akan buat MySQL instance
+3. Klik MySQL instance → tab "Variables"
+4. Catat nilai-nilai berikut:
+   - MYSQLHOST
+   - MYSQLPORT
+   - MYSQLUSER
+   - MYSQLPASSWORD
+   - MYSQLDATABASE
+
+================================================================================
+LANGKAH 4: IMPORT DATABASE
+================================================================================
+1. Di Railway MySQL, klik tab "Data"
+2. Atau gunakan external tool (DBeaver, MySQL Workbench)
+3. Connect dengan credentials dari Railway
+4. Import file: database/chatbot_dispusipda.sql
+5. Jalankan juga: scripts/import_faqs.py untuk import FAQ + embeddings
+
+================================================================================
+LANGKAH 5: SETUP ENVIRONMENT VARIABLES
+================================================================================
+Di Railway, klik project Anda → tab "Variables" → tambahkan:
+
+DB_HOST=${{MySQL.MYSQLHOST}}
+DB_PORT=${{MySQL.MYSQLPORT}}
+DB_USER=${{MySQL.MYSQLUSER}}
+DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
+DB_NAME=${{MySQL.MYSQLDATABASE}}
+GROQ_API_KEY=gsk_xxxxxxxxxxxxxxx
+LLM_PROVIDER=groq
+FLASK_ENV=production
+PORT=5000
+
+Catatan: 
+- GROQ_API_KEY: Ambil dari https://console.groq.com
+- ${{MySQL.xxx}} adalah Railway reference variables
+
+================================================================================
+LANGKAH 6: DEPLOY
+================================================================================
+1. Railway akan auto-detect Python project
+2. Akan install dependencies dari requirements.txt
+3. Akan jalankan command dari Procfile
+4. Tunggu sampai status "Deployed" (hijau)
+
+================================================================================
+LANGKAH 7: DAPATKAN URL PUBLIC
+================================================================================
+1. Klik project Anda
+2. Klik tab "Settings"
+3. Scroll ke "Domains"
+4. Klik "Generate Domain"
+5. Anda akan dapat URL seperti:
+   https://chatbot-dispusipda-production.up.railway.app
+
+================================================================================
+LANGKAH 8: TEST API
+================================================================================
+Buka browser, akses:
+https://chatbot-dispusipda-production.up.railway.app/api/health
+
+Jika response: {"status": "healthy"} → BERHASIL!
+
+Test chat:
+curl -X POST https://chatbot-dispusipda-production.up.railway.app/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "jam buka perpustakaan"}'
+
+================================================================================
+LANGKAH 9: UPDATE WIDGET
+================================================================================
+1. Buka file: contoh-website-dispusip/index.html
+2. Cari baris:
+   const RAILWAY_API_URL = 'https://chatbot-dispusipda-production.up.railway.app';
+3. Ganti dengan URL Railway Anda yang sebenarnya
+4. Simpan
+
+================================================================================
+LANGKAH 10: EMBED KE WEBSITE NIAGAHOSTER
+================================================================================
+
+OPSI A: Embed sebagai iframe (Simple)
+--------------------------------------
+<iframe 
+    src="https://chatbot-dispusipda-production.up.railway.app/chatbot-widget.html" 
+    style="position: fixed; bottom: 20px; right: 20px; width: 400px; height: 600px; border: none; z-index: 9999;">
+</iframe>
+
+OPSI B: Copy-paste script (Recommended)
+---------------------------------------
+Copy seluruh tag <script>...</script> dari contoh-website-dispusip/index.html
+(bagian paling bawah, setelah komentar "CHATBOT WIDGET - EMBED CODE")
+Paste ke website Dispusipda sebelum tag </body>
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+ERROR: "Application failed to respond"
+→ Cek logs di Railway dashboard
+→ Pastikan environment variables sudah benar
+
+ERROR: "Database connection failed"
+→ Cek DB_HOST, DB_PORT, DB_USER, DB_PASSWORD
+→ Pastikan MySQL instance running
+
+ERROR: "CORS error"
+→ Backend sudah ada CORS handler
+→ Jika masih error, tambahkan domain website ke whitelist di app.py
+
+ERROR: "Groq API error"
+→ Cek GROQ_API_KEY sudah benar
+→ Cek quota Groq di https://console.groq.com
+
+================================================================================
+BIAYA RAILWAY
+================================================================================
+- Free tier: 500 jam/bulan (cukup untuk 1 project yang selalu aktif)
+- Jika melebihi: ~$5/bulan
+- MySQL: Free tier 1GB storage
+
+================================================================================
+MAINTENANCE
+================================================================================
+Untuk update code:
+1. Push ke GitHub
+2. Railway auto-deploy
+
+Untuk update FAQ:
+1. Edit di database langsung
+2. Atau jalankan scripts/import_faqs.py ulang
+
+Untuk lihat logs:
+1. Railway dashboard → project → Deployments → View Logs
+
+================================================================================
+STRUKTUR FILE UNTUK DEPLOY
+================================================================================
+chatbot-dispusipda/
+├── Procfile                 ← Command untuk Railway
+├── railway.json             ← Config Railway
+├── requirements.txt         ← Dependencies Python
+├── .python-version          ← Versi Python
+├── api/
+│   └── app.py              ← Flask server
+├── database/
+│   ├── db_manager.py
+│   └── chatbot_dispusipda.sql
+├── services/
+│   └── chatbot_service.py
+├── config/
+│   └── settings.py
+└── contoh-website-dispusip/
+    └── index.html          ← Contoh website dengan widget
+
+================================================================================
+SELESAI!
+================================================================================
+Setelah deploy, chatbot Anda akan:
+1. Running 24/7 di Railway
+2. Bisa diakses dari mana saja
+3. Website Dispusipda di Niagahoster cuma embed widget
+4. Tidak perlu Python di Niagahoster
+
+================================================================================

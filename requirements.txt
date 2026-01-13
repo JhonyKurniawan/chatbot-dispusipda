@@ -1,0 +1,28 @@
+# Web Scraping
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Database
+mysql-connector-python>=8.0.0
+pymysql>=1.1.0
+
+# Flask API
+flask>=3.0.0
+flask-cors>=4.0.0
+python-dotenv>=1.0.0
+gunicorn>=21.0.0
+
+# AI/ML - Embeddings
+sentence-transformers>=2.2.0
+torch>=2.0.0
+numpy>=1.24.0
+
+# LLM APIs
+groq>=0.4.0
+google-generativeai>=0.3.0
+
+# Utilities
+schedule>=1.2.0
+tqdm>=4.66.0
+colorama>=0.4.0
