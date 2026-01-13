@@ -1,40 +1,58 @@
 """
 Embedding Service untuk Chatbot Dispusipda
-Menggunakan Sentence Transformers untuk semantic search
+Menggunakan HuggingFace Inference API untuk semantic search (lightweight, no PyTorch)
 """
 
 import numpy as np
-from sentence_transformers import SentenceTransformer
+import requests
+import os
 from typing import List, Tuple
 import sys
-import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config.config import EMBEDDING_CONFIG
 
+# HuggingFace Inference API
+HF_API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+
 
 class EmbeddingService:
-    """Service untuk mengelola embeddings menggunakan Sentence Transformers"""
+    """Service untuk mengelola embeddings menggunakan HuggingFace API"""
     
     def __init__(self):
-        self.model = None
         self.model_name = EMBEDDING_CONFIG['model_name']
         self.dimension = EMBEDDING_CONFIG['embedding_dimension']
-        self._load_model()
+        self.hf_token = os.getenv('HF_TOKEN', '')
+        self.headers = {"Authorization": f"Bearer {self.hf_token}"} if self.hf_token else {}
+        print(f"Embedding service initialized (API mode)")
     
-    def _load_model(self):
-        """Load Sentence Transformer model"""
-        print(f"Loading embedding model: {self.model_name}")
-        self.model = SentenceTransformer(self.model_name)
-        print("Embedding model loaded successfully")
+    def _call_api(self, texts: List[str]) -> List[List[float]]:
+        """Call HuggingFace Inference API"""
+        try:
+            response = requests.post(
+                HF_API_URL,
+                headers=self.headers,
+                json={"inputs": texts, "options": {"wait_for_model": True}},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(f"HF API error: {response.status_code} - {response.text}")
+                # Fallback: return zero vectors
+                return [[0.0] * self.dimension for _ in texts]
+        except Exception as e:
+            print(f"HF API exception: {e}")
+            return [[0.0] * self.dimension for _ in texts]
     
     def encode(self, texts: List[str], show_progress: bool = False) -> np.ndarray:
         """
-        Encode texts menjadi embeddings
+        Encode texts menjadi embeddings via API
         
         Args:
             texts: List of texts to encode
-            show_progress: Show progress bar
+            show_progress: Show progress bar (ignored in API mode)
             
         Returns:
             numpy array of embeddings
@@ -42,15 +60,23 @@ class EmbeddingService:
         if isinstance(texts, str):
             texts = [texts]
         
-        embeddings = self.model.encode(
-            texts,
-            batch_size=EMBEDDING_CONFIG['batch_size'],
-            show_progress_bar=show_progress,
-            convert_to_numpy=True,
-            normalize_embeddings=True  # Untuk cosine similarity
-        )
+        # API has limit, batch if needed
+        batch_size = 50
+        all_embeddings = []
         
-        return embeddings.astype(np.float32)
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i:i+batch_size]
+            embeddings = self._call_api(batch)
+            all_embeddings.extend(embeddings)
+        
+        embeddings_array = np.array(all_embeddings, dtype=np.float32)
+        
+        # Normalize embeddings for cosine similarity
+        norms = np.linalg.norm(embeddings_array, axis=1, keepdims=True)
+        norms[norms == 0] = 1  # Avoid division by zero
+        embeddings_array = embeddings_array / norms
+        
+        return embeddings_array
     
     def encode_single(self, text: str) -> np.ndarray:
         """Encode single text"""
