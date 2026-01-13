@@ -78,7 +78,17 @@ def api_status():
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """Detailed health check"""
+    """Simple health check - just return ok"""
+    return jsonify({
+        'status': 'healthy',
+        'service': 'Chatbot Dispusipda',
+        'message': 'Server is running'
+    })
+
+
+@app.route('/api/health/detailed', methods=['GET'])
+def health_check_detailed():
+    """Detailed health check with database status"""
     try:
         chatbot, db = get_services()
         
